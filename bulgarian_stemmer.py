@@ -1,14 +1,22 @@
 #!/usr/bin/python
-# -*- coding: cp1251 -*-
+# -*- coding: utf8 -*-
 
 import re
 import pickle
 import os
+import pkg_resources
+
+
 
 class BulgarianStemmer(object):
-    def __init__(self, filename='stem_rules_context_1.pkl'):
+    def __init__(
+        self,
+        filename=pkg_resources.resource_filename(
+            'bulgarian_stemmer',
+            'stem_rules_context_1.pkl',
+        )
+    ):
         self.stem_boundary = 1
-
         file_extension = os.path.splitext(filename)[1]
         if file_extension == '.pkl':
             self.load_pickle_context(filename)
@@ -30,7 +38,7 @@ class BulgarianStemmer(object):
         stemming_context = open(filename, 'r')
         for line in stemming_context:
             rule_match = re.search('([\xe0-\xff]+)\s==>\s([\xe0-\xff]+)\s([0-9]+)', line)
-            
+
             if rule_match:
                 if int(rule_match.group(3)) > self.stem_boundary:
                     self.stemming_rules[rule_match.group(1)] = rule_match.group(2)
@@ -38,8 +46,12 @@ class BulgarianStemmer(object):
     def stem(self, word):
         valid_word = re.search('[^\xe0\xfa\xee\xf3\xe5\xe8\xff\xfe]*[\xe0\xfa\xee\xf3\xe5\xe8\xff\xfe]', word)
         word_length = len(word)
+        valid_word = True
+
+        print self.stemming_rules
 
         if valid_word and word_length > 1:
+            print 'valid word'
             for i in range(word_length):
                 suffix = word[i:]
 
@@ -49,14 +61,7 @@ class BulgarianStemmer(object):
         return word
 
     def print_word(self, word):
-        print self(word).decode('cp1251')
+        print self(word).decode('utf8')
 
 if __name__ == '__main__':
     stemmer = BulgarianStemmer('stem_rules_context_1.pkl')
-
-    stemmer.print_word('обикновен')
-    stemmer.print_word('английският')
-    stemmer.print_word('човекът')
-    stemmer.print_word('уникалният')
-    stemmer.print_word('негодувания')
-    
